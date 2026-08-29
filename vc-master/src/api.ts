@@ -1,0 +1,7 @@
+const API='http://127.0.0.1:8000/api';
+const ORGANIZATION_API='http://127.0.0.1:8001/api';
+export const token=()=>localStorage.getItem('access');
+export async function login(username:string,password:string){const r=await fetch(`${API}/auth/login/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});if(!r.ok)throw new Error('Credenciales incorrectas');const d=await r.json();localStorage.setItem('access',d.access);return d;}
+export async function api<T>(path:string,options:RequestInit={}):Promise<T>{const r=await fetch(`${API}${path}`,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${token()}`,...options.headers}});if(r.status===401){localStorage.removeItem('access');location.reload();}if(!r.ok){let message='No fue posible completar la operación';try{const data=await r.json();message=data.detail||Object.values(data).flat().join(' ')||message}catch{}throw new Error(message)}if(r.status===204)return undefined as T;return r.json();}
+
+export async function organizationApi<T>(path:string,options:RequestInit={}):Promise<T>{const r=await fetch(`${ORGANIZATION_API}${path}`,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${token()}`,...options.headers}});if(!r.ok){let message='No fue posible consultar la organización';try{const data=await r.json();message=data.detail||message}catch{}throw new Error(message)}return r.json();}

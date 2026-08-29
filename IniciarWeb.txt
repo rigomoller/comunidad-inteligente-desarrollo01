@@ -1,0 +1,18 @@
+PRIMERA VEZ
+1. Instalar Python 3.12 o superior.
+2. Instalar Node.js LTS.
+3. Clic derecho sobre preparar-proyecto.ps1 y elegir Ejecutar con PowerShell.
+
+CADA VEZ QUE QUIERAS USAR LA PÁGINA
+1. Clic derecho sobre iniciar-aplicacion.ps1 y elegir Ejecutar con PowerShell.
+2. Esperar unos segundos. El navegador se abrirá automáticamente.
+
+USUARIOS DE DEMOSTRACIÓN
+Administrador: administrador / Admin1234!
+Directiva: directiva / Demo1234!
+Vecino: vecino / Demo1234!
+
+DJANGO ADMIN
+Dirección: http://127.0.0.1:8000/admin/
+Usuario: administrador
+Contraseña: Admin1234!

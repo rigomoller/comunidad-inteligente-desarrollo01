@@ -1,0 +1,24 @@
+.editor select { padding: 12px; border: 1px solid #ccd4dc; border-radius: 8px; background: white; }
+.editor button { display: flex; align-items: center; gap: 8px; }
+.editor button svg { width: 18px; }
+.org-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+.org-main { background: linear-gradient(135deg, #102b49, #071421); color: white; display: flex; gap: 20px; align-items: flex-start; }
+.org-main p { color: #c2ccd7; }
+.org-mark { background: #f2af21; color: #10233f; border-radius: 12px; padding: 15px; }
+.detail-list dl { display: grid; gap: 12px; }
+.detail-list dl div { display: grid; grid-template-columns: 145px 1fr; border-bottom: 1px solid #edf0f3; padding-bottom: 10px; }
+.detail-list dt { color: #758394; font-size: 12px; }
+.detail-list dd { margin: 0; font-weight: 600; }
+.board { margin-top: 20px; }
+.board-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.board-list > div { display: flex; gap: 10px; align-items: center; background: #f5f7f9; padding: 14px; border-radius: 10px; }
+.board-list small, .board-list strong { display: block; }
+.message-editor { grid-template-columns: 280px 1fr auto; }
+.message-list article, .request-list article { justify-content: flex-start; gap: 15px; }
+.message-list article > svg, .request-list article > svg { color: #d39408; flex: none; }
+.request-list article select { margin-left: auto; height: 40px; }
+.status { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.status.received { background: #e8eef5; }
+.status.in_progress { background: #fff1c7; color: #805900; }
+.status.resolved { background: #dff5e8; color: #176b3a; }
+@media (max-width: 900px) { .org-grid, .message-editor { grid-template-columns: 1fr; } .board-list { grid-template-columns: 1fr; } }

@@ -1,0 +1,11 @@
+{
+  "folders": [
+    { "name": "Interfaz web", "path": "vc-master" },
+    { "name": "Autenticación y comunidad", "path": "auth_core-master" },
+    { "name": "Organización y geografía", "path": "organizacion_core-master" }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:Autenticación y comunidad}\\..\\.venv\\Scripts\\python.exe",
+    "files.exclude": { "**/__pycache__": true, "**/*.pyc": true }
+  }
+}
