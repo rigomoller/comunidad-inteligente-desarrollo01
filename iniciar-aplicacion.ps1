@@ -2,6 +2,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot ".venv\Scripts\python.exe"
 $frontend = Join-Path $projectRoot "vc-master"
+$environmentFile = Join-Path $projectRoot ".env"
 
 if (-not (Test-Path -LiteralPath $python)) {
     throw "Primero ejecutar preparar-proyecto.ps1."
@@ -9,6 +10,25 @@ if (-not (Test-Path -LiteralPath $python)) {
 if (-not (Test-Path -LiteralPath (Join-Path $frontend "node_modules"))) {
     throw "Primero ejecutar preparar-proyecto.ps1 para instalar la interfaz."
 }
+if (-not (Test-Path -LiteralPath $environmentFile)) {
+    throw "Falta .env. Ejecuta configurar-postgresql.ps1 y luego preparar-proyecto.ps1."
+}
+
+Push-Location (Join-Path $projectRoot "auth_core-master")
+try {
+    & $python manage.py migrate --noinput
+    if ($LASTEXITCODE -ne 0) {
+        throw "No hay conexión con comunidad_auth. Confirma que el servicio PostgreSQL esté iniciado."
+    }
+} finally { Pop-Location }
+
+Push-Location (Join-Path $projectRoot "organizacion_core-master")
+try {
+    & $python manage.py migrate --noinput
+    if ($LASTEXITCODE -ne 0) {
+        throw "No hay conexión con comunidad_organizacion. Confirma que el servicio PostgreSQL esté iniciado."
+    }
+} finally { Pop-Location }
 
 $authLog = Join-Path $projectRoot "auth_core.out.log"
 $authErrorLog = Join-Path $projectRoot "auth_core.error.log"
@@ -43,3 +63,4 @@ try {
     Write-Warning "La aplicación quedó iniciada, pero Windows no permitió abrir el navegador automáticamente. Abrir manualmente http://127.0.0.1:5173"
 }
 Write-Host "Comunidad Inteligente está iniciándose en http://127.0.0.1:5173" -ForegroundColor Green
+Write-Host "Base de datos activa: PostgreSQL (comunidad_auth + comunidad_organizacion)."

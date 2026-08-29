@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,12 +54,34 @@ TEMPLATES = [
 ]
 WSGI_APPLICATION = "config.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.getenv("ORGANIZATION_SQLITE_PATH", BASE_DIR / "db.sqlite3"),
+USE_SQLITE = os.getenv("USE_SQLITE", "0") == "1"
+if USE_SQLITE:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.getenv("ORGANIZATION_SQLITE_PATH", BASE_DIR / "db.sqlite3"),
+        }
     }
-}
+else:
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    if not postgres_password:
+        raise ImproperlyConfigured(
+            "Falta POSTGRES_PASSWORD. Ejecuta configurar-postgresql.ps1 desde la raíz del proyecto."
+        )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("ORGANIZATION_POSTGRES_DB", "comunidad_organizacion"),
+            "USER": os.getenv("POSTGRES_USER", "comunidad_app"),
+            "PASSWORD": postgres_password,
+            "HOST": os.getenv("POSTGRES_HOST", "127.0.0.1"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+            "CONN_MAX_AGE": int(os.getenv("POSTGRES_CONN_MAX_AGE", "60")),
+            "OPTIONS": {
+                "connect_timeout": int(os.getenv("POSTGRES_CONNECT_TIMEOUT", "5")),
+            },
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = []
 LANGUAGE_CODE = "es-cl"

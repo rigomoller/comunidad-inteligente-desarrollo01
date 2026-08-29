@@ -26,12 +26,21 @@ La demostración poblada contiene un certificado ficticio emitido para `vecino` 
 
 ## Preparar y ejecutar
 
-1. Instalar Python 3.12 o superior y Node.js LTS.
-2. Ejecutar `preparar-proyecto.ps1` una sola vez.
-3. Ejecutar `iniciar-aplicacion.ps1` para iniciar los tres módulos.
-4. Abrir `http://127.0.0.1:5173`.
+1. Instalar Python 3.12 o superior, Node.js LTS y PostgreSQL 14 o superior.
+2. Durante la instalación de PostgreSQL incluir **PostgreSQL Server**, **pgAdmin** y
+   **Command Line Tools**, y conservar la contraseña del usuario `postgres`.
+3. Ejecutar `configurar-postgresql.ps1` una sola vez. El asistente crea el usuario técnico,
+   las dos bases y el archivo privado `.env`.
+4. Ejecutar `preparar-proyecto.ps1` una sola vez para instalar dependencias, migrar las tablas
+   y cargar información ficticia.
+5. Ejecutar `iniciar-aplicacion.ps1` para iniciar los tres módulos.
+6. Abrir `http://127.0.0.1:5173`.
+
+Descarga oficial para Windows: <https://www.postgresql.org/download/windows/>.
 
 También se puede abrir todo el código ejecutando `abrir-en-visual-studio-code.ps1`.
+En Visual Studio Code, `Terminal > Run Task` muestra las tareas **configurar PostgreSQL**,
+**preparar primera vez** e **iniciar todo**.
 
 ## Usuarios ficticios
 
@@ -45,10 +54,26 @@ El comando `seed_demo` crea además doce vecinos ficticios, publicaciones, activ
 
 ## Base de datos
 
-Cada backend usa SQLite para que el proyecto funcione sin instalar MySQL o PostgreSQL:
+PostgreSQL es el motor principal. Se usa un servidor y dos bases independientes para evitar
+mezclar responsabilidades:
 
-- `auth_core-master/db.sqlite3`: usuarios y vida comunitaria.
-- `organizacion_core-master/db.sqlite3`: identidad legal, territorio y directiva.
+- `comunidad_auth`: usuarios, perfiles, publicaciones, actividades, documentos, mensajes,
+  solicitudes y certificados.
+- `comunidad_organizacion`: identidad legal, territorio, organización y directiva.
+
+El usuario técnico predeterminado es `comunidad_app`. Su contraseña se genera automáticamente
+y queda solo en `.env`, archivo excluido de Git. Nunca debe enviarse al repositorio.
+
+Para revisar los datos en pgAdmin:
+
+1. Abrir pgAdmin y registrar el servidor `127.0.0.1`, puerto `5432`.
+2. Ingresar con el usuario administrador `postgres` y la contraseña elegida al instalar.
+3. Expandir `Servers > PostgreSQL > Databases`.
+4. Abrir `comunidad_auth` o `comunidad_organizacion`, luego
+   `Schemas > public > Tables`.
+
+SQLite permanece disponible solo para pruebas aisladas o recuperación. Para usarlo de forma
+temporal, definir `USE_SQLITE=1`; no es el modo normal de ejecución.
 
 Administración principal: `http://127.0.0.1:8000/admin/`.
 
@@ -65,8 +90,10 @@ Si la API externa falla, la plataforma continúa funcionando con el modo local c
 ## Pruebas
 
 ```powershell
+$env:USE_SQLITE="1"
 .\.venv\Scripts\python.exe auth_core-master\manage.py test community
 .\.venv\Scripts\python.exe organizacion_core-master\manage.py test organizations
+Remove-Item Env:USE_SQLITE
 cd vc-master
 npm run build
 ```
