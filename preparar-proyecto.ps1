@@ -36,8 +36,12 @@ $npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
 $pnpm = Get-Command pnpm.cmd -ErrorAction SilentlyContinue
 $bundledPnpm = "C:\Users\romer\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd"
 $bundledNode = "C:\Users\romer\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin"
-if (-not $npm -and -not $pnpm -and (Test-Path -LiteralPath $bundledPnpm)) {
+
+if (-not (Get-Command node.exe -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPath (Join-Path $bundledNode "node.exe"))) {
     $env:PATH = "$bundledNode;" + $env:PATH
+}
+
+if (-not $npm -and -not $pnpm -and (Test-Path -LiteralPath $bundledPnpm)) {
     $packageManager = $bundledPnpm
 } elseif ($pnpm) { $packageManager = $pnpm.Source }
 elseif ($npm) { $packageManager = $npm.Source }

@@ -1,10 +1,12 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+import hashlib
 
-from community.models import Activity, CommunityDocument, CommunityRequest, Neighborhood, Post, PrivateMessage, Profile
+from community.models import Activity, CommunityDocument, CommunityRequest, Neighborhood, Post, PrivateMessage, Profile, ResidenceCertificateRequest
 
 
 class Command(BaseCommand):
@@ -133,12 +135,82 @@ class Command(BaseCommand):
             },
         )
 
+        demo_proof = b"%PDF-1.4\n% Comprobante ficticio para demostracion del Capstone\n"
+        certificate = ResidenceCertificateRequest.objects.filter(
+            neighborhood=neighborhood,
+            requester=neighbor,
+            purpose="Postulación a beneficio municipal",
+        ).first()
+        if certificate is None:
+            certificate = ResidenceCertificateRequest(
+                neighborhood=neighborhood,
+                requester=neighbor,
+                applicant_name=neighbor.get_full_name(),
+                rut="12345678-5",
+                address="Pasaje Los Maitenes 245",
+                commune=neighborhood.commune,
+                purpose="Postulación a beneficio municipal",
+                proof_type="utility_bill",
+                document_date=timezone.localdate() - timedelta(days=12),
+                proof_sha256=hashlib.sha256(demo_proof).hexdigest(),
+                sworn_declaration=True,
+                automatic_status="passed",
+                automatic_notes=(
+                    "Formato, tamaño e integridad básica del archivo: correctos. "
+                    "La autenticidad legal fue confirmada por una persona de la directiva."
+                ),
+                status="issued",
+                reviewer_notes="Antecedentes ficticios revisados para la demostración.",
+                reviewed_by=author,
+                reviewed_at=now,
+                issued_at=now,
+            )
+            certificate.proof_document.save(
+                "comprobante-demo.pdf", ContentFile(demo_proof), save=False
+            )
+            certificate.save()
+            certificate.certificate_number = f"CI-{timezone.localdate():%Y}-{certificate.pk:06d}"
+            certificate.save(update_fields=["certificate_number"])
+
+        pending_neighbor = User.objects.get(username="ana.soto")
+        pending_proof = b"%PDF-1.4\n% Cuenta de electricidad ficticia para revision\n"
+        pending_certificate = ResidenceCertificateRequest.objects.filter(
+            neighborhood=neighborhood,
+            requester=pending_neighbor,
+            purpose="Acreditar domicilio ante una institución bancaria",
+        ).first()
+        if pending_certificate is None:
+            pending_certificate = ResidenceCertificateRequest(
+                neighborhood=neighborhood,
+                requester=pending_neighbor,
+                applicant_name=pending_neighbor.get_full_name(),
+                rut="11111111-1",
+                address="Calle Los Álamos 782",
+                commune=neighborhood.commune,
+                purpose="Acreditar domicilio ante una institución bancaria",
+                proof_type="utility_bill",
+                document_date=timezone.localdate() - timedelta(days=7),
+                proof_sha256=hashlib.sha256(pending_proof).hexdigest(),
+                sworn_declaration=True,
+                automatic_status="passed",
+                automatic_notes=(
+                    "Formato, tamaño, fecha y coincidencia de comuna: correctos. "
+                    "Pendiente de confirmar autenticidad por la directiva."
+                ),
+                status="pending",
+            )
+            pending_certificate.proof_document.save(
+                "cuenta-electricidad-demo.pdf", ContentFile(pending_proof), save=False
+            )
+            pending_certificate.save()
+
         self.stdout.write(
             self.style.SUCCESS(
                 "Información ficticia creada: "
                 f"{neighborhood.profiles.count()} usuarios, "
                 f"{neighborhood.posts.count()} publicaciones, "
                 f"{neighborhood.activities.count()} actividades y "
-                f"{neighborhood.documents.count()} documentos."
+                f"{neighborhood.documents.count()} documentos y "
+                f"{neighborhood.residence_certificate_requests.count()} certificados."
             )
         )

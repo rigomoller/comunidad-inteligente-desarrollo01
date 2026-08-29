@@ -7,6 +7,8 @@
 *.sqlite3
 **/node_modules/
 **/dist/
+**/private_uploads/
 *.tsbuildinfo
 .vscode/*.log
 *.log
+tmp/

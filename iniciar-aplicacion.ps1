@@ -24,8 +24,12 @@ $npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
 $pnpm = Get-Command pnpm.cmd -ErrorAction SilentlyContinue
 $bundledPnpm = "C:\Users\romer\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd"
 $bundledNode = "C:\Users\romer\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin"
-if (-not $npm -and -not $pnpm -and (Test-Path -LiteralPath $bundledPnpm)) {
+
+if (-not (Get-Command node.exe -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPath (Join-Path $bundledNode "node.exe"))) {
     $env:PATH = "$bundledNode;" + $env:PATH
+}
+
+if (-not $npm -and -not $pnpm -and (Test-Path -LiteralPath $bundledPnpm)) {
     $packageManager = $bundledPnpm
 } elseif ($pnpm) { $packageManager = $pnpm.Source }
 elseif ($npm) { $packageManager = $npm.Source }
@@ -33,5 +37,9 @@ else { throw "No se encontró Node.js. Instala Node.js LTS y vuelve a intentar."
 Start-Process -FilePath $packageManager -ArgumentList "run", "dev", "--", "--host", "127.0.0.1" -WorkingDirectory $frontend -RedirectStandardOutput $frontendLog -RedirectStandardError $frontendErrorLog -WindowStyle Hidden
 
 Start-Sleep -Seconds 4
-Start-Process "http://127.0.0.1:5173"
+try {
+    Start-Process "http://127.0.0.1:5173"
+} catch {
+    Write-Warning "La aplicación quedó iniciada, pero Windows no permitió abrir el navegador automáticamente. Abrir manualmente http://127.0.0.1:5173"
+}
 Write-Host "Comunidad Inteligente está iniciándose en http://127.0.0.1:5173" -ForegroundColor Green
